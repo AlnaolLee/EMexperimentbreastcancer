@@ -135,14 +135,35 @@ Nem = 12*54;
 C = (pi*((rhondl)^2)*((rhoem)^2)*(lndl)*(Brndl)*(Nem))/4;
 
 %disp(C);
+coordx=1.5;
+coordy=-0.9;
+Ik = 100;
 
-dhatk = 
+r = [9, 0.4];
+rk = [coordx, coordy];
+rem = sqrt((coordx)^2+(coordy)^2);
+rhatk = rk/rem;
 
-F = sysum(((((dhatk)*((rhatk)^T)*h+h*((rhatk)^T)*...
-(dhatk)+(rhatk)*((dhatk)^T)*h-5*((rhatk)^T)*(dhatk)*((dhatk)^T)*h)/...
-((deltak)^4))*Ik),k,1,m);
+dk = r - rk;
+deltak = sqrt(dk(1)^2+dk(2)^2);
+dhatk = dk / deltak;
+
+%matrix.' --> transpose
+theta = 0;
+h = [cos(theta),sin(theta)];
+
+syms k
+
+F = symsum((((dhatk*(rhatk.')*h)+(h*(rhatk.')*...
+dhatk)+(rhatk*(dhatk.')*h)-(5*(rhatk.')*dhatk*(dhatk.')*h))/...
+(((deltak)^4)*Ik)),k,1,10);
 
 finalforce = F*3*C;
+
+disp(finalforce);
+disp(finalforce(2));
+disp(finalforce(1));
+disp(finalforce(3));
 
  %% 1 cuboidal magnet
 % clear all; clc;
