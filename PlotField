@@ -125,30 +125,30 @@ plot([2 2],[-1 1],'-k','Linewidth',2); plot([3 3],[-1 1],'-k','Linewidth',2);% l
 % quiver(X,Y,Brho,Bz,4,'g');
 %h = streamline(X,Y,Bx+Bvx,Bz+Bvz,X(1:10:end,1:10:end),Y(1:10:end,1:10:end)); set(h,'Color','red');
 
-rhondl = 0.08;
-rhoem = 4.575;
-lndl = 1.8;
-Brndl = 1.33;
+rhondl = 0.0008; %m
+rhoem = 0.04575; %m
+lndl = 0.018; %m
+Brndl = 1.33; %T
 Nem = 12*54;
 
-
+S = [0,-1;1,0];
 C = (pi*((rhondl)^2)*((rhoem)^2)*(lndl)*(Brndl)*(Nem))/4;
 
 %disp(C);
-Ik = 100;
+Ik = -10;%A
 Fsum = [0;0];
-xsolenoid = 2.5;
-ysolenoid = 0;
-xneedle = -1;
-yneedle = 0;
+xsolenoid = 0.025;%m 
+ysolenoid = 0;%m
+xneedle = -0.001;%m
+yneedle = 0;%m
 
 steps = 5;
 xforce_vec = zeros(1,steps);
 xneedle_vec = zeros(1,steps);
 
 %matrix' --> transpose
-theta = 90;
-h = [cos(theta);sin(theta)];
+theta = 10;
+h = [cosd(theta);sind(theta)];%degree
 
 for i=1:steps
     r = [xneedle; yneedle]; %location of needle keep updating the poistion of teh needle 
@@ -171,28 +171,26 @@ for i=1:steps
     xforce_vec(i) = finalforce(1);
     xneedle_vec(i) = xneedle;
     %F =Kx; x= F/K
-    xneedle = xneedle + (finalforce(1) / 9000);
+    xneedle = xneedle + (finalforce(1) / 9000); %yneedle --> K =90,000
 
 end
-
-%soleforce2 = [2339.21228566385,5524.25195746157,12902.8958336728,186412.597459284,186413.201926675];
-%solex2 = [-1,-0.740087523815128,-0.126281750763843,1.30737334186646,22.0198841706757];
-%soleforce3 = [3508.81842849577,9136.35316994108,36470.9563466890,45439.0739658386,45493.7075177429];
-%solex3 = [-1,-0.610131285722692,0.405019066492984,4.45734754945842,9.50613354566271];
-
 
 %plotxaxis = 1:steps;
 figure(10);subplot(121);plot(xforce_vec);
 title("Force on Needle at each iteration"), xlabel("Steps"),ylabel("Force"); 
-hold on; plot(soleforce2,"r");plot(soleforce3, "g");hold off;
-legend("One Solenoid","Two Solenoid","Three Solenoid");
+%hold on; plot(soleforce2,"r");plot(soleforce3, "g");hold off;
+%legend("One Solenoid","Two Solenoid","Three Solenoid");
 subplot(122);plot(xneedle_vec, "b*");
-hold on; plot(solex2,"r*");plot(solex3, "g*");hold off;
-title("Distance between the center of the solenoids and the needle"),label("Steps"),ylabel("Distance");
+%hold on; plot(solex2,"r*");plot(solex3, "g*");hold off;
+title("Distance between the center of the solenoids and the needle"),xlabel("Steps"),ylabel("Distance");
 
 disp(finalforce);
 
+syms k
 
+torque = symsum((((C/(deltak)^3)*(((h')*(S)*(rhatk))-(3*(h')*(S)*(dhatk)*(dhatk')*(rhatk))))*Ik),k,1,1);
+
+disp(torque);
 
  %% 1 cuboidal magnet
 % clear all; clc;
