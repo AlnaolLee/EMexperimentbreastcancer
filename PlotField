@@ -125,32 +125,41 @@ plot([2 2],[-1 1],'-k','Linewidth',2); plot([3 3],[-1 1],'-k','Linewidth',2);% l
 % quiver(X,Y,Brho,Bz,4,'g');
 %h = streamline(X,Y,Bx+Bvx,Bz+Bvz,X(1:10:end,1:10:end),Y(1:10:end,1:10:end)); set(h,'Color','red');
 
-rhondl = 0.0008; %m
-rhoem = 0.04575; %m
-lndl = 0.018; %m
+rhondl = 0.0006; %m
+rhoem = 0.01; %m
+lndl = 0.02; %m
 Brndl = 1.33; %T
-Nem = 12*54;
+Nem = 1000;
+m = 1;
 
 S = [0,-1;1,0];
 C = (pi*((rhondl)^2)*((rhoem)^2)*(lndl)*(Brndl)*(Nem))/4;
 
 %disp(C);
-Ik = -10;%A
+
+Ik = -0.5;%Current in Ampere
+
 Fsum = [0;0];
 xsolenoid = 0.025;%m 
 ysolenoid = 0;%m
-xneedle = -0.001;%m
+xneedle = 0.00;%m
 yneedle = 0;%m
 
-steps = 5;
-xforce_vec = zeros(1,steps);
-xneedle_vec = zeros(1,steps);
+vvec = [0];
+xforce_vec = [0];
+xneedle_vec = [0];
+time_vec = [0];
+
+travvec = [0];
+
+vinitial = 0;
 
 %matrix' --> transpose
-theta = 10;
+theta = 0;
 h = [cosd(theta);sind(theta)];%degree
 
-for i=1:steps
+while 1
+    
     r = [xneedle; yneedle]; %location of needle keep updating the poistion of teh needle 
     rk = [xsolenoid; ysolenoid]; %location of solenoid
     rem = sqrt(rk(1)^2+rk(2)^2);
@@ -168,21 +177,49 @@ for i=1:steps
     end
     
     finalforce = Fsum*3*C; 
-    xforce_vec(i) = finalforce(1);
-    xneedle_vec(i) = xneedle;
-    %F =Kx; x= F/K
-    xneedle = xneedle + (finalforce(1) / 9000); %yneedle --> K =90,000
-
+    
+    
+    %if vfinal < 5
+        xforce_vec(end+1) = finalforce(1);
+        %F =Kx; x= F/K
+        xneedle = xneedle + (finalforce(1) / 9000); %yneedle --> K =90,000
+        if xneedle > xsolenoid
+            break;
+        end
+        xneedle_vec(end+1) = xneedle;
+        travelled = xneedle - xneedle_vec(end-1);
+        travvec(end+1) = travelled;
+        vfinal = sqrt((vinitial^2)+(2*finalforce(1)*travelled/m));
+        time = m*(vfinal - vinitial)/finalforce(1);
+        vvec(end+1) = vfinal;
+        time_vec(end+1) = time_vec(end) + time;
+        vinitial = vfinal;
+   % else
+        
+        
+        
+        
+    %end
+    
+    
 end
 
+xneedle_vec(end+1) = xsolenoid;
+remainder = xsolenoid - xneedle_vec(end-1);
+remtime = remainder/vinitial;
+time_vec(end+1) = time_vec(end) + remtime;
+
+
 %plotxaxis = 1:steps;
-figure(10);subplot(121);plot(xforce_vec);
-title("Force on Needle at each iteration"), xlabel("Steps"),ylabel("Force"); 
-%hold on; plot(soleforce2,"r");plot(soleforce3, "g");hold off;
-%legend("One Solenoid","Two Solenoid","Three Solenoid");
-subplot(122);plot(xneedle_vec, "b*");
+ figure(20);plot(force1, "magenta");
+% title("Time Taken for the Needle to Travel some Distance with Varying Current Levels"), 
+xlabel("Iterations"),ylabel("Force(N)"); 
+ hold on; plot(force5,"yellow");plot(force10,"green");plot(force15,"blue");plot(force20,"black");hold off;
+ legend("1A","5A","10A","15A","20A");
+
+%subplot(122);plot(xneedle_vec, "b*");
 %hold on; plot(solex2,"r*");plot(solex3, "g*");hold off;
-title("Distance between the center of the solenoids and the needle"),xlabel("Steps"),ylabel("Distance");
+%title("Distance between the center of the solenoids and the needle"),xlabel("Steps"),ylabel("Distance");
 
 disp(finalforce);
 
@@ -191,6 +228,7 @@ syms k
 torque = symsum((((C/(deltak)^3)*(((h')*(S)*(rhatk))-(3*(h')*(S)*(dhatk)*(dhatk')*(rhatk))))*Ik),k,1,1);
 
 disp(torque);
+
 
  %% 1 cuboidal magnet
 % clear all; clc;
